@@ -1,0 +1,25 @@
+version: "3"
+
+tasks:
+  init-db:
+    cmds:
+      - docker compose -f docker-compose.local.yml up db -d
+
+  close-db:
+    cmds:
+      - docker compose -f docker-compose.local.yml stop db
+      - docker compose -f docker-compose.local.yml rm -f db
+
+  dev:
+    cmds:
+      - task init-db
+      - |
+        source .venv/bin/activate
+        flask --app api run --debug
+        task close-db
+
+  dev-docker:
+    cmds:
+      - |
+        docker compose -f docker-compose.local.yml up
+        docker compose -f docker-compose.local.yml down

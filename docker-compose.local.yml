@@ -1,0 +1,31 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:5000"
+    environment:
+      - ENV=production
+      - SECRET_KEY=supersecretkey
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=example
+      - DB_NAME=melodyvault
+      - DB_PORT=3306
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_DATABASE=melodyvault
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./api/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  mysql-data:
