@@ -1,32 +1,23 @@
-import mysql.connector
 import click
-from flask import current_app, g
+import os
 
-def get_db():
-    if 'db' not in g:
-        g.db = mysql.connector.connect(
-            host=current_app.config['DB_HOST'],
-            user=current_app.config['DB_USER'],
-            password=current_app.config['DB_PASS'],
-            database=current_app.config['DB_NAME'],
-            port=current_app.config['DB_PORT']
-        )
-    return g.db
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='./conf/.env.local')
+
+engine = create_engine(os.getenv('DATABASE_URI'))
+db_session = scoped_session(sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+))
+
+Base = declarative_base()
+Base.query = db_session.query_property()
 
 def init_db():
-    db = get_db()
-    cursor = db.cursor()
-
-    with current_app.open_resource('schema.sql') as f:
-        schema = f.read().decode('utf8')
-        statements = schema.split(';')
-        
-        for statement in statements:
-            if statement.strip():
-                cursor.execute(statement)
-    
-    db.commit()
-    cursor.close()
+    import api.models
+    Base.metadata.create_all(bind=engine)
 
 @click.command('init-db')
 def init_db_command():
@@ -34,10 +25,7 @@ def init_db_command():
     click.echo('Database initialized')
 
 def close_db(e=None):
-    db = g.pop('db', None)
-
-    if db is not None:
-        db.close()
+    db_session.remove()
 
 def init_app(app):
     app.teardown_appcontext(close_db)
