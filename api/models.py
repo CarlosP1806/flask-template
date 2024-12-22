@@ -20,12 +20,3 @@ class Playlist(Base):
 
     def __repr__(self):
         return f'<Playlist {self.name}>'
-
-class Test(Base):
-    __tablename__ = 'test'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-
-    def __repr__(self):
-        return f'<Test {self.name}>'
