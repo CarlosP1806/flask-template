@@ -15,4 +15,8 @@ def create_app(config_class=Config):
     def health():
         return jsonify({'status': 'ok'})
     
+    @app.route("/test")
+    def test():
+        return jsonify({"message": "Hello, World!"})
+    
     return app
