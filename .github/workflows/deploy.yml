@@ -20,12 +20,26 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
+      - name: Pull latest code on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@ec2-18-117-187-141.us-east-2.compute.amazonaws.com "
+            cd app &&
+            git pull origin main
+          "
+
+      - name: Apply Alembic Migrations
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@ec2-18-117-187-141.us-east-2.compute.amazonaws.com "
+            cd app &&
+            docker-compose exec api alembic revision --autogenerate -m 'CI/CD auto migration' &&
+            docker-compose exec api alembic upgrade head
+          "
+
       # Copy files to EC2
       - name: Deploy files to EC2
         run: |
           ssh -o StrictHostKeyChecking=no  ubuntu@ec2-18-117-187-141.us-east-2.compute.amazonaws.com "
             cd app &&
-            git pull origin main &&
             docker-compose down &&
             docker-compose up -d --build
           "
