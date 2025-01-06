@@ -4,7 +4,7 @@ services:
     ports:
       - "8000:5000"
     environment:
-      - ENV=production
+      - ENV=dev
       - DATABASE_URI=mysql+pymysql://root:example@db:3306/melodyvault
     depends_on:
       - db
